@@ -5,8 +5,7 @@
 # vertical arm on port D.
 # Requires the package 'python-cwiid'.
 # Make sure bluetooth is enabled in brickman
-# before trying to use this. Hold 2 to go forward
-# and 1 to go backward.
+# Its archade drive with the two joistics on the classic
 
 import os
 import time
@@ -22,26 +21,29 @@ def clamp(value, lower, upper):
 def dead(value):
 	return 0 if abs(value) < DEADZONE else value
 
+# --- EV3 Classes ---
+
+PYUDEV_CONTEXT = pyudev.Context()
+
+class EV3MotorNotFound(Exception): pass
+
 class EV3Motor:
-	def __init__(self, which=0):
-		devices = list(pyudev.Context().list_devices(subsystem='tacho-motor') \
-				.match_attribute('driver_name', 'lego-ev3-l-motor'))
+	def __init__(self, address):
+		devices = PYUDEV_CONTEXT.list_devices(subsystem='tacho-motor', LEGO_ADDRESS=address)
+		try: self.device = next(d for d in devices)
+		except StopIteration: raise EV3MotorNotFound(address)
 
-		if which >= len(devices):
-			raise Exception("Motor not found")
-
-		self.device = devices[which]
-		self.pos = open(os.path.join(self.device.sys_path, 'position'), 'r+',
-				0)
-		self.duty_cycle_sp = open(os.path.join(self.device.sys_path,
-				'duty_cycle_sp'), 'w', 0)
-
+		self.pos = open(os.path.join(self.device.sys_path, 'position'), 'r+')
+		self.duty_cycle_sp = open(os.path.join(self.device.sys_path, 'duty_cycle_sp'), 'w', 0)
+		self.duty_cycle = open(os.path.join(self.device.sys_path, 'duty_cycle'), 'r')
+		self.max_speed = int(open(os.path.join(self.device.sys_path, 'max_speed'), 'r').read())
 		self.reset()
 
 	def reset(self):
 		self.set_pos(0)
 		self.set_duty_cycle_sp(0)
-		self.send_command("run-direct")
+		self.send_command('run-direct')
+
 	def get_pos(self):
 		self.pos.seek(0)
 		return int(self.pos.read())
@@ -49,13 +51,21 @@ class EV3Motor:
 	def set_pos(self, new_pos):
 		return self.pos.write(str(int(new_pos)))
 
+	def get_duty_cycle(self):
+		self.duty_cycle.seek(0)
+		return int(self.duty_cycle.read())
+
 	def set_duty_cycle_sp(self, new_duty_cycle_sp):
-		return self.duty_cycle_sp.write(str(clamp(int(new_duty_cycle_sp), -100, 100)))
+		in_max = 100
+		self.duty_cycle_sp.write(str(
+			int(min(max(new_duty_cycle_sp, -in_max), in_max))
+		))
 
 	def send_command(self, new_mode):
 		with open(os.path.join(self.device.sys_path, 'command'),
 				'w') as command:
 			command.write(str(new_mode))
+
 
 
 print 'Press 1+2 on the wiimote now'
@@ -65,13 +75,8 @@ print 'Connected!'
 wm.led = 0b0011
 wm.rpt_mode = cwiid.RPT_CLASSIC
 
-b = EV3Motor(0)
-c = EV3Motor(1)
-
-reverse = 1 # -1 or 1
-top_speed = 50
-last_btn_state = 0
-move = 0
+b = EV3Motor('ev3-ports:outB')
+c = EV3Motor('ev3-ports:outC')
 
 try:
 	while True:
@@ -80,8 +85,12 @@ try:
 		
 		speed = ls_y * 100
 		
-		b.set_duty_cycle_sp(speed + rs_x * 50)
-		c.set_duty_cycle_sp(speed - rs_x * 50)
+		if (bool(classic['buttons'] & cwiid.CLASSIC_BTN_A) == True):
+			b.set_duty_cycle_sp(99)
+			c.set_duty_cycle_sp(99)
+		else:
+			b.set_duty_cycle_sp(speed + rs_x * 50)
+			c.set_duty_cycle_sp(speed - rs_x * 50)
 finally:
 	b.send_command('stop')
 	c.send_command('stop')
