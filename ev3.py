@@ -100,12 +100,4 @@ class sensor:
 
 
 if __name__ == "__main__":
-	Arm = motor('B')
-	from time import sleep
-	while True:
-		Arm.hold()
-		sleep(1)
-		Arm.reset()
-		sleep(1)
 	print("A module for controlling motors and\nreading sensors for the LEGO EV3")
-

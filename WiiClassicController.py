@@ -68,15 +68,15 @@ class EV3Motor:
 
 
 
-print 'Press 1+2 on the wiimote now'
+print('Press 1+2 on the wiimote now')
 time.sleep(1)
 wm = cwiid.Wiimote()
-print 'Connected!'
+print('Connected!')
 wm.led = 0b0011
 wm.rpt_mode = cwiid.RPT_CLASSIC
 
-b = EV3Motor('ev3-ports:outB')
-c = EV3Motor('ev3-ports:outC')
+b = EV3Motor('B')
+c = EV3Motor('C')
 
 try:
 	while True:
@@ -85,7 +85,7 @@ try:
 		
 		speed = ls_y * 100
 		
-		if (bool(classic['buttons'] & cwiid.CLASSIC_BTN_A) == True):
+		if (bool(wm.state['classic']['buttons'] & cwiid.CLASSIC_BTN_A) == True):
 			b.set_duty_cycle_sp(99)
 			c.set_duty_cycle_sp(99)
 		else:
