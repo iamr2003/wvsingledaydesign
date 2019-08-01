@@ -72,9 +72,10 @@ class motor:
 			file.seek(0)
 			return file.read().replace("\n", "")
 
+	# self.dutySpeed.write(str(int(min(max(newDutySpeed, -100), 100))))
 	def run(self, speed):
 		with open(os.path.join(self.device.sys_path, 'duty_cycle_sp'), 'w') as file:
-			file.write(str(speed))
+			file.write(str(int(min(max(speed, -100), 100))))
 		with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
 			file.write("run-direct")
 
