@@ -9,103 +9,206 @@ from time import sleep
 PYUDEV_CONTEXT = pyudev.Context()
 
 
-class sensorNotFound(Exception): pass
-
 class sensor:
 	def __init__(self, address):
-		colors = PYUDEV_CONTEXT.list_devices(subsystem='lego-sensor', LEGO_ADDRESS='ev3-ports:in' + str(address))
-		try: self.isSensor = next(c for c in colors)
-		except IndexError: raise sensorNotFound(address)
+		sensors = PYUDEV_CONTEXT.list_devices(subsystem='lego-sensor', LEGO_ADDRESS='ev3-ports:in' + str(address))
+		self.address = address
+		try:
+			self.isSensor = next(c for c in sensors)
+			self.disconnectedMessage = False
+		except: pass
 
-		self.value_f = open(os.path.join(self.isSensor.sys_path, 'value0'), 'r')
-		self.distance_f = open(os.path.join(self.isSensor.sys_path, 'units'), 'r')
+		try:
+			self.value_f = open(os.path.join(self.isSensor.sys_path, 'value0'), 'r')
+			self.distance_f = open(os.path.join(self.isSensor.sys_path, 'units'), 'r')
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Sensor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
 	def mode(self, input):
-		with open(os.path.join(self.isSensor.sys_path, 'mode'), 'w') as mode:
-			mode.write(input)
+		try:
+			with open(os.path.join(self.isSensor.sys_path, 'mode'), 'w') as mode:
+				mode.write(input)
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
 	def getValue(self):
-		self.value_f.seek(0)
-		return int(self.value_f.read())
+		try:
+			self.value_f.seek(0)
+			return int(self.value_f.read())
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
 	def colorReflect(self):
-		with open(os.path.join(self.isSensor.sys_path, 'mode'), 'w') as mode:
-			mode.write('COL-REFLECT')
+		try:
+			with open(os.path.join(self.isSensor.sys_path, 'mode'), 'w') as mode:
+				mode.write('COL-REFLECT')
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
 	def colorColor(self):
-		with open(os.path.join(self.isSensor.sys_path, 'mode'), 'w') as mode:
-			mode.write('COL-COLOR')
+		try:
+			with open(os.path.join(self.isSensor.sys_path, 'mode'), 'w') as mode:
+				mode.write('COL-COLOR')
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
 	def touch(self):
-		with open(os.path.join(self.isSensor.sys_path, 'mode'), 'w') as mode:
-			mode.write('TOUCH')
+		try:
+			with open(os.path.join(self.isSensor.sys_path, 'mode'), 'w') as mode:
+				mode.write('TOUCH')
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
 	def ultraIN(self):
-		with open(os.path.join(self.isSensor.sys_path, 'mode'), 'w') as mode:
-			mode.write('US-DIST-IN')
+		try:
+			with open(os.path.join(self.isSensor.sys_path, 'mode'), 'w') as mode:
+				mode.write('US-DIST-IN')
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
 	def ultraCM(self):
-		with open(os.path.join(self.isSensor.sys_path, 'mode'), 'w') as mode:
-			mode.write('US-DIST-CM')
+		try:
+			with open(os.path.join(self.isSensor.sys_path, 'mode'), 'w') as mode:
+				mode.write('US-DIST-CM')
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
 	def ultraDistance(self):
-		return (self.getValue() / 10)
+		try:
+			return (self.getValue() / 10)
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
-class motorNotFound(Exception): pass
 
 class motor:
 	def __init__(self, address):
 		devices = PYUDEV_CONTEXT.list_devices(subsystem='tacho-motor', LEGO_ADDRESS='ev3-ports:out' + str(address))
-		try: self.device = next(d for d in devices)
-		except StopIteration: raise motorNotFound(address)
+		self.address = address
+		try: 
+			self.device = next(d for d in devices)
+			self.disconnectedMessage = False
+		except StopIteration: pass
 
 	def reset(self):
-		with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
-			file.write('reset')
+		try:
+			with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
+				file.write('reset')
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
 	def sendCommand(self, newMode):
-		with open(os.path.join(self.device.sys_path, 'command'),'w') as file:
-			file.write(str(newMode))
+		try:
+			with open(os.path.join(self.device.sys_path, 'command'),'w') as file:
+				file.write(str(newMode))
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
 	def getPos(self):
-		with open(os.path.join(self.device.sys_path, 'position'),'r') as file:
-			file.seek(0)
-			return file.read().replace("\n", "")
+		try:
+			with open(os.path.join(self.device.sys_path, 'position'),'r') as file:
+				file.seek(0)
+				return int(file.read().replace("\n", ""))
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
 	# self.dutySpeed.write(str(int(min(max(newDutySpeed, -100), 100))))
 	def run(self, speed):
-		with open(os.path.join(self.device.sys_path, 'duty_cycle_sp'), 'w') as file:
-			file.write(str(int(min(max(speed, -100), 100))))
-		with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
-			file.write("run-direct")
-
-	def breaking(self, breaking):
-		if (breaking == True):
-			with open(os.path.join(self.device.sys_path, 'stop_action'), 'w') as file:
-				file.write('hold')
-			with open(os.path.join(self.device.sys_path, 'time_sp'), 'w') as file:
-				file.write('0')
+		try:
+			with open(os.path.join(self.device.sys_path, 'duty_cycle_sp'), 'w') as file:
+				file.write(str(int(min(max(speed, -100), 100))))
 			with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
-				file.write('run-timed')
-		else:
-			self.reset()
+				file.write("run-direct")
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
+
+	def braking(self, braking):
+		try:
+			if (braking == True):
+				with open(os.path.join(self.device.sys_path, 'stop_action'), 'w') as file:
+					file.write('hold')
+				with open(os.path.join(self.device.sys_path, 'time_sp'), 'w') as file:
+					file.write('0')
+				with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
+					file.write('run-timed')
+			else:
+				self.reset()
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
 	def moveRel(self, distance, speed):
-		with open(os.path.join(self.device.sys_path, 'speed_sp'), 'w') as file:
-			file.write(str(speed))
-		with open(os.path.join(self.device.sys_path, 'position_sp'), 'w') as file:
-			file.write(str(distance))
-		with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
-			file.write('run-to-rel-pos')
+		try:
+			with open(os.path.join(self.device.sys_path, 'speed_sp'), 'w') as file:
+				file.write(str(speed))
+			with open(os.path.join(self.device.sys_path, 'position_sp'), 'w') as file:
+				file.write(str(distance))
+			with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
+				file.write('run-to-rel-pos')
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
 	def moveAbs(self, distance, speed):
-		with open(os.path.join(self.device.sys_path, 'speed_sp'), 'w') as file:
-			file.write(str(speed))
-		with open(os.path.join(self.device.sys_path, 'position_sp'), 'w') as file:
-			file.write(str(distance))
-		with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
-			file.write('run-to-abs-pos')
+		try:
+			with open(os.path.join(self.device.sys_path, 'speed_sp'), 'w') as file:
+				file.write(str(speed))
+			with open(os.path.join(self.device.sys_path, 'position_sp'), 'w') as file:
+				file.write(str(distance))
+			with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
+				file.write('run-to-abs-pos')
+		except IOError:
+			if (self.disconnectedMessage == False):
+				print("Motor " + str(self.address) + " disconnected!")
+				self.disconnectedMessage = True
+			self.__init__(self.address)
 
 
 if __name__ == "__main__":
-	print("A module for controlling motors and\nreading sensors for the LEGO EV3")
+	touch = sensor(3)
+	touch.touch()
+	while True:
+		touch.getValue()
+	# print("A module for controlling motors and\nreading sensors for the LEGO EV3")
