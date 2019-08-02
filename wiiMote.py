@@ -62,6 +62,10 @@ class wiiMote:
 		self.rs_x, self.rs_y = [self.dead(v / 16.0 - 1) for v in self.wm.state['classic']['r_stick']]
 		# return self.ls_y
 		return {'leftY': self.ls_y, 'leftX': self.ls_x, 'rightY': self.rs_y, 'rightX': self.rs_x}
+	
+	def getNunchukJoistic(self):
+		valueX, valueY = [self.dead(v / 132.0 - 1) for v in self.wm.state['nunchuk']['stick']]
+		return {"X": valueX, "Y": valueY}
 
 	def getMoteButton(self, button):
 		if (button == "A"):
@@ -90,7 +94,7 @@ class wiiMote:
 			print("That's not a button!")
 			return None
 
-	def getClassicButtons(self, button):
+	def getClassicButton(self, button):
 		if (button == "A"):
 			return bool(self.wm.state['classic']['buttons'] & cwiid.CLASSIC_BTN_A)
 		elif (button == "B"):
@@ -125,14 +129,24 @@ class wiiMote:
 			print("That's not a button!")
 			return None
 
+	def getNunchukButton(self, button):
+		if (button == "C"):
+			return bool(self.wm.state['nunchuk']['buttons'] & cwiid.NUNCHUK_BTN_C)
+		elif (button == "Z"):
+			return bool(self.wm.state['nunchuk']['buttons'] & cwiid.NUNCHUK_BTN_Z)
+		else:
+			print("That's not a button!")
+			return None
+
 if __name__ == "__main__":
 	mote = wiiMote()
-	mote.setAccelerometer()
+	mote.setRumble
 	sleep(2)
 	try:
 		while True:
-			# print(mote.getClassicJoistics()['leftY'])
-			print(mote.getAccelerometer("tilt"))
+			mote.setRumble(True)
+			sleep(2)
+			mote.setRumble(False)
 			sleep(2)
 	finally:
 		mote.disconnect()
