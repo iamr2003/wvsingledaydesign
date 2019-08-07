@@ -10,7 +10,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 oldCommand = ''
 
 try:
-    s.connect(('192.168.1.106', 8000))
+    s.connect(('BaseWithClawAndLift', 8000))
 except:
     print("Incorect Base IP")
 
