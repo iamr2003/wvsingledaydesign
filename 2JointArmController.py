@@ -55,37 +55,50 @@ def watch_joystick():
             JOYSTICK_STATE[event.code] = map_range(caps.min, caps.max, -1.0, 1.0, event.value)
             if abs(JOYSTICK_STATE[event.code])<0.05:JOYSTICK_STATE[event.code] = 0
 import math as m
-def armController(x,y,shoulder,elbow):
-    a1=1
-    a2=.66
-    q2 = int(-(m.degrees(m.acos((x**2 + y**2 -(a1**2)-(a2**2))/(2*a1*a2)))))
-    q1 = int(m.degrees(m.atan2(y,x)+m.atan2((a2*m.sin(q2)),(a1+a2*m.cos(q2)))))
-    print('q1(shoulder) ='+str(q1) + ' q2(elbow) =' + str(q2))
-    elbow.moveAbs(5*q2,100)
-    shoulder.moveAbs(5*q1,100)
+armZeroed = False
+def armController(x,y,shoulder,elbow,shoulderLimit,elbowLimit):
+    a1=11.5
+    a2=8
+    global armZeroed
+    if armZeroed:
+        q2 = int(-(m.degrees(m.acos(((x**2) + (y**2) -(a1**2)-(a2**2))/(2*a1*a2)))))
+        q1 = int(m.degrees(m.atan2(y,x)+m.atan2((a2*m.sin(q2)),(a1+a2*m.cos(q2)))))
+        #print('q1(shoulder) ='+str(q1) + ' q2(elbow) =' + str(q2))
+        elbow.moveAbs(5*(180+q2),200)
+        shoulder.moveAbs(5*(q1-90),200)
+    else:
+        elbow.run(-50)
+        shoulder.run(50)
+        if elbowLimit.getValue()==1 and shoulderLimit.getValue()==1:
+            elbow.reset()
+            shoulder.reset()
+            elbow.braking(True)
+            shoulder.braking(True)
+            armZeroed = True
+
 # --- Main Code ---
 if __name__ == '__main__':
-
     print('Initializing motors')
     claw = ev3.motor('A')
     elbow = ev3.motor('B')
     shoulder = ev3.motor('C')
     turret = ev3.motor('D')
+    elbowLimit = ev3.sensor('1')
+    elbowLimit.touch()
+    shoulderLimit = ev3.sensor('2')
+    shoulderLimit.touch()
     print('Discovering joystick')
 
     # 'Wireless Controller' for PS4
+
     find_joystick('Wireless Controller')
     joystick_thread = threading.Thread(target=watch_joystick)
     joystick_thread.daemon = True
     joystick_thread.start()
 
     print('Starting drive loop')
-    x=1
-    y=1
-    elbow.reset()
-    shoulder.reset()
-    elbow.braking(True)
-    shoulder.braking(True)
+    x=4
+    y=4
     try:
         while True:
             ls_y = -JOYSTICK_STATE[ecodes.ABS_Y]
@@ -96,11 +109,19 @@ if __name__ == '__main__':
                 turret.run(0)
             else:
                 turret.run(int((rt-lt))*MAX_SPEED)#lazy logic to avoid comparators
-            armController(x,y,shoulder,elbow)
+            armController(x,y,shoulder,elbow,shoulderLimit,elbowLimit)
+            print ('x =' + str(x) + ' y ='+ str(y))
             x+=ls_y*.1
             y+=rs_y*.1
+            if x>7:x=7
+            if y>10:y=10
+
     finally:
-        claw.reset()
-        elbow.reset()
-        shoulder.reset()
-        turret.reset()
+        claw.braking(False)
+        claw.run(0)
+        elbow.braking(False)
+        elbow.run(0)
+        shoulder.braking(False)
+        shoulder.run(0)
+        turret.braking(False)
+        turret.run(0)
