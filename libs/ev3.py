@@ -3,9 +3,11 @@
 import os
 import pyudev
 from time import sleep
+import array
+import fcntl
+import sys
 
 # --- EV3 CLASS ---
-
 PYUDEV_CONTEXT = pyudev.Context()
 
 class sensor:
@@ -190,18 +192,18 @@ class motor:
 			self.connect(self.address)
 
 	def moveRel(self, distance, speed):
-		try:
-			with open(os.path.join(self.device.sys_path, 'speed_sp'), 'w') as file:
-				file.write(str(speed))
-			with open(os.path.join(self.device.sys_path, 'position_sp'), 'w') as file:
-				file.write(str(distance))
-			with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
-				file.write('run-to-rel-pos')
-		except:
-			if (self.motorDisconnectedMessage == False):
-				print("Motor " + str(self.address) + " disconnected!")
-				self.motorDisconnectedMessage = True
-			self.connect(self.address)
+		# try:
+		with open(os.path.join(self.device.sys_path, 'speed_sp'), 'w') as file:
+			file.write(str(int(speed)))
+		with open(os.path.join(self.device.sys_path, 'position_sp'), 'w') as file:
+			file.write(str(distance))
+		with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
+			file.write('run-to-rel-pos')
+		# except:
+		# 	if (self.motorDisconnectedMessage == False):
+		# 		print("Motor " + str(self.address) + " disconnected!")
+		# 		self.motorDisconnectedMessage = True
+		# 	self.connect(self.address)
 
 	def moveAbs(self, distance, speed):
 		try:
@@ -216,6 +218,62 @@ class motor:
 				print("Motor " + str(self.address) + " disconnected!")
 				self.motorDisconnectedMessage = True
 			self.connect(self.address)
+
+class buttons:
+	def __init__(self):
+		self.BUF_LEN = (0x2ff + 7) / 8
+		self.buf = array.array('B', [0] * self.BUF_LEN)
+
+		with open('/dev/input/by-path/platform-gpio_keys-event', 'r') as fd:
+			self.ret = fcntl.ioctl(fd, self.EVIOCGKEY(len(self.buf)), self.buf)
+	
+	def EVIOCGKEY(self, length):
+		return 2 << (14+8+8) | length << (8+8) | ord('E') << 8 | 0x18
+
+	def test_bit(self, bit, bytes):
+		return bool(bytes[bit / 8] & (1 << (bit % 8)))
+
+	def getCode(self, button):
+		if (button == 'center'):
+			return 28
+		elif (button == 'left'):
+			return 105
+		elif(button == 'right'):
+			return 106
+		elif(button == 'up'):
+			return 103
+		elif(button == 'down'):
+			return 108
+		elif(button == 'back'):
+			return 14
+
+	def getButton(self, buttonCode):
+		if self.ret < 0:
+			print "ioctl error", self.ret
+			sys.exit(1)
+
+		key_state = self.test_bit(buttonCode, self.buf)
+		print key_state
+
+class led:
+	def __init__(self, led):
+		if (led == 'left'):
+			self.path = '/sys/class/leds/led0:'
+		elif (led == 'right'):
+			self.path = '/sys/class/leds/led1:'
+		else:
+			print("That isn't a led")
+			sys.exit()
+
+	def setColor(self, red = 0, green = 0):
+		with open(self.path + 'green:brick-status/brightness', 'w') as greenFile:
+			greenFile.write(str(green))
+		with open(self.path + 'red:brick-status/brightness', 'w') as redFile:
+			redFile.write(str(red))
+
+	def reset(self):
+		self.setColor(0, 0)
+		
 
 if __name__ == "__main__":
 	print("A module for controlling motors and\nreading sensors for the LEGO EV3")
