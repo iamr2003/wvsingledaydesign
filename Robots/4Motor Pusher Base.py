@@ -7,12 +7,10 @@ import thread
 import socket
 import cwiid
 
-lift = ev3.motor("A")
-rightMotor = ev3.motor("B")
-leftMotor = ev3.motor("C")
-claw = ev3.motor("D")
-
-liftHomePos = lift.getPos()
+outLeftMotor = ev3.motor("A")
+inLeftMotor = ev3.motor("B")
+inRightMotor = ev3.motor("C")
+outRightMotor = ev3.motor("D")
 
 mote = wiiMote.wiiMote()
 mote.setMode(cwiid.RPT_BTN | cwiid.RPT_CLASSIC)
@@ -20,9 +18,6 @@ sleep(2)
 
 wasPushed = False
 isReversed = False
-
-liftAuto = False
-
 
 def hatThread():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -58,35 +53,19 @@ try:
         speed = mote.getClassicJoistics()["leftY"] * 100
         rightJoistic = (mote.getClassicJoistics()["rightX"] * mote.getClassicJoistics()["rightX"] * mote.getClassicJoistics()["rightX"])
         if (isReversed == False):
-            leftMotor.run(speed + rightJoistic * 100)
-            rightMotor.run(speed - rightJoistic * 100)
+            outLeftMotor.run(-speed + rightJoistic * 100)
+            inLeftMotor.run(-speed + rightJoistic * 100)
+            inRightMotor.run(-speed - rightJoistic * 100)
+            outRightMotor.run(-speed - rightJoistic * 100)
         else:
-            leftMotor.run(-speed + rightJoistic * 100)
-            rightMotor.run(-speed - rightJoistic * 100)
-
-        # Claw
-        if (mote.getClassicButton("L")):
-            claw.run(100)
-        elif (mote.getClassicButton("R")):
-            claw.run(-100)
-        else:
-            claw.braking(True)
-
-        # Lift
-        if (mote.getClassicButton("ZL")):
-            liftAuto = False
-            lift.run(-50)
-        elif (mote.getClassicButton("ZR")):
-            liftAuto = True
-            lift.moveAbs(liftHomePos, 525)
-        elif (liftAuto == False):
-            lift.braking(True)
-
-        if (liftHomePos == lift.getPos()):
-            liftAuto = False
+            outLeftMotor.run(speed + rightJoistic * 100)
+            inLeftMotor.run(speed + rightJoistic * 100)
+            inRightMotor.run(speed - rightJoistic * 100)
+            outRightMotor.run(speed - rightJoistic * 100)
 
 finally:
-    lift.reset()
-    leftMotor.reset()
-    rightMotor.reset()
-    claw.reset()
+    outLeftMotor.reset()
+    inLeftMotor.reset()
+    inRightMotor.reset()
+    outRightMotor.reset()
+    

@@ -107,8 +107,7 @@ class wiiMote:
 			elif (button == "HOME"):
 				return bool(self.wm.state['buttons'] & cwiid.BTN_HOME)
 			else:
-				print("That's not a button!")
-				return None
+				return self.wm.state['buttons']
 		except KeyError:
 			print("Classic Controller disconnected!")
 

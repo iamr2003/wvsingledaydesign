@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 import ev3
+import cwiid
 from time import sleep
 import socket
 
@@ -16,13 +17,13 @@ except:
 
 try:
     while True:
-        command = s.recv(1024)
+        command = int(s.recv(1024))
         print(command)
-        if (command == 'up\n'):
-            ArmMotor.run(-50)
-        elif (command == 'down\n'):
-            ArmMotor.run(50)
-        elif (command == 'brake\n'):
+        if (bool(command & cwiid.BTN_A)):
+            ArmMotor.run(-75)
+        elif (bool(command & cwiid.BTN_B)):
+            ArmMotor.run(75)
+        elif (command == 0):
             ArmMotor.run(0)
             ArmMotor.braking(True)
 finally:
