@@ -10,38 +10,7 @@ from evdev import ecodes
 
 # Other libraries
 import threading
-import pyudev
-import os
-
-
-# --- EV3 Classes ---
-
-PYUDEV_CONTEXT = pyudev.Context()
-
-class EV3MotorNotFound(Exception): pass
-
-class EV3Motor:
-    def __init__(self, address):
-        devices = PYUDEV_CONTEXT.list_devices(subsystem='tacho-motor', LEGO_ADDRESS=address)
-        try: self.device = next(d for d in devices)
-        except StopIteration: raise EV3MotorNotFound(address)
-
-        self.duty_cycle_sp = open(os.path.join(self.device.sys_path, 'duty_cycle_sp'), 'w', 0)
-        self.reset()
-
-    def reset(self):
-        self.set_duty_cycle_sp(0)
-        self.send_command("run-direct")
-
-    def set_duty_cycle_sp(self, new_duty_cycle_sp):
-        return self.duty_cycle_sp.write(str(
-            min(max(int(new_duty_cycle_sp), -100), 100)
-        ))
-
-    def send_command(self, new_mode):
-        with open(os.path.join(self.device.sys_path, 'command'), 'w') as command:
-            command.write(str(new_mode))
-
+import ev3
 
 # --- Joystick Reading Code ---
 
@@ -74,8 +43,8 @@ if __name__ == '__main__':
 
     print('Initializing motors')
 
-    left = EV3Motor('ev3-ports:outB')
-    right = EV3Motor('ev3-ports:outC')
+    left = ev3.motor('B')
+    right = ev3.motor('C')
 
     print('Discovering joystick')
 
@@ -95,8 +64,8 @@ if __name__ == '__main__':
             speed = -(ls_y ** 2) if ls_y < 0 else (ls_y ** 2)
             turn  = -(rs_x ** 2) if rs_x < 0 else (rs_x ** 2)
 
-            left.set_duty_cycle_sp((speed * 1 - turn * 0.5) * MAX_SPEED)
-            right.set_duty_cycle_sp((speed * 1 + turn * 0.5) * MAX_SPEED)
+            left.run((speed * 1 - turn * 0.5) * MAX_SPEED)
+            right.run((speed * 1 + turn * 0.5) * MAX_SPEED)
     finally:
-        left.send_command('stop')
-        right.send_command('stop')
+        left.reset()
+        right.reset()
