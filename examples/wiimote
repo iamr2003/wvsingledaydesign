@@ -1,0 +1,20 @@
+mote.setMote()
+
+no buttons pressed
+mote.getState()['buttons'] == 0
+
+mote.getMoteButton("A")
+mote.getMoteButton("B")
+mote.getMoteButton("UP")
+mote.getMoteButton("DOWN")
+mote.getMoteButton("LEFT")
+mote.getMoteButton("RIGHT")
+mote.getMoteButton("MINUS")
+mote.getMoteButton("HOME")
+mote.getMoteButton("PLUS")
+mote.getMoteButton("1")
+mote.getMoteButton("2")
+
+mote.setLed(1)
+
+mote.setRumble(True)
