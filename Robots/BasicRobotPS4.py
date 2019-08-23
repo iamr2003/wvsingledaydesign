@@ -64,8 +64,8 @@ if __name__ == '__main__':
             speed = -(ls_y ** 2) if ls_y < 0 else (ls_y ** 2)
             turn  = -(rs_x ** 2) if rs_x < 0 else (rs_x ** 2)
 
-            left.run((speed * 1 - turn * 0.5) * MAX_SPEED)
-            right.run((speed * 1 + turn * 0.5) * MAX_SPEED)
+            left.move((speed * 1 - turn * 0.5) * MAX_SPEED)
+            right.move((speed * 1 + turn * 0.5) * MAX_SPEED)
     finally:
         left.reset()
         right.reset()

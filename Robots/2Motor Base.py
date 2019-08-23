@@ -51,11 +51,11 @@ try:
         speed = mote.getClassicJoistics()["leftY"] * 100
         rightJoistic = (mote.getClassicJoistics()["rightX"] * mote.getClassicJoistics()["rightX"] * mote.getClassicJoistics()["rightX"])
         if (isReversed == False):
-            inLeftMotor.run(-speed + rightJoistic * 100)
-            inRightMotor.run(-speed - rightJoistic * 100)
+            inLeftMotor.move(-speed + rightJoistic * 100)
+            inRightMotor.move(-speed - rightJoistic * 100)
         else:
-            inLeftMotor.run(speed + rightJoistic * 100)
-            inRightMotor.run(speed - rightJoistic * 100)
+            inLeftMotor.move(speed + rightJoistic * 100)
+            inRightMotor.move(speed - rightJoistic * 100)
 
 finally:
     inLeftMotor.reset()

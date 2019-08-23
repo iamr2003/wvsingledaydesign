@@ -82,11 +82,11 @@ class motor:
             return int(file.read().replace("\n", ""))
 
     # self.dutySpeed.write(str(int(min(max(newDutySpeed, -100), 100))))
-    def run(self, speed):
+    def move(self, speed):
         with open(os.path.join(self.device.sys_path, 'duty_cycle_sp'), 'w') as file:
             file.write(str(int(min(max(speed, -100), 100))))
         with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
-            file.write("run-direct")
+            file.write("move-direct")
 
     def braking(self, braking):
         if (breaking == True):
@@ -95,7 +95,7 @@ class motor:
             with open(os.path.join(self.device.sys_path, 'time_sp'), 'w') as file:
                 file.write('0')
             with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
-                file.write('run-timed')
+                file.write('move-timed')
         else:
             self.reset()
 
@@ -105,7 +105,7 @@ class motor:
         with open(os.path.join(self.device.sys_path, 'position_sp'), 'w') as file:
             file.write(str(distance))
         with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
-            file.write('run-to-rel-pos')
+            file.write('move-to-rel-pos')
 
     def moveAbs(self, distance, speed):
         with open(os.path.join(self.device.sys_path, 'speed_sp'), 'w') as file:
@@ -113,7 +113,7 @@ class motor:
         with open(os.path.join(self.device.sys_path, 'position_sp'), 'w') as file:
             file.write(str(distance))
         with open(os.path.join(self.device.sys_path, 'command'), 'w') as file:
-            file.write('run-to-abs-pos')
+            file.write('move-to-abs-pos')
 
 
 
@@ -194,9 +194,9 @@ if __name__ == '__main__':
                 
 
             
-            arm.run(armspeed)
-            turn.run((-rs_x) * MAX_SPEED)
-            grabber.run((ls_x*.75) * MAX_SPEED)
+            arm.move(armspeed)
+            turn.move((-rs_x) * MAX_SPEED)
+            grabber.move((ls_x*.75) * MAX_SPEED)
     finally:
         arm.sendCommand('stop')
         turn.sendCommand('stop')

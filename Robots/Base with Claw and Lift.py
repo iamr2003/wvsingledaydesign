@@ -58,24 +58,24 @@ try:
         speed = mote.getClassicJoistics()["leftY"] * 100
         rightJoistic = (mote.getClassicJoistics()["rightX"] * mote.getClassicJoistics()["rightX"] * mote.getClassicJoistics()["rightX"])
         if (isReversed == False):
-            leftMotor.run(speed + rightJoistic * 100)
-            rightMotor.run(speed - rightJoistic * 100)
+            leftMotor.move(speed + rightJoistic * 100)
+            rightMotor.move(speed - rightJoistic * 100)
         else:
-            leftMotor.run(-speed + rightJoistic * 100)
-            rightMotor.run(-speed - rightJoistic * 100)
+            leftMotor.move(-speed + rightJoistic * 100)
+            rightMotor.move(-speed - rightJoistic * 100)
 
         # Claw
         if (mote.getClassicButton("L")):
-            claw.run(-100)
+            claw.move(-100)
         elif (mote.getClassicButton("R")):
-            claw.run(100)
+            claw.move(100)
         else:
             claw.braking(True)
 
         # Lift
         if (mote.getClassicButton("ZL")):
             liftAuto = False
-            lift.run(-50)
+            lift.move(-50)
         elif (mote.getClassicButton("ZR")):
             liftAuto = True
             lift.moveAbs(liftHomePos, 525)

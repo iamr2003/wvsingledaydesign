@@ -20,11 +20,11 @@ try:
         command = int(s.recv(1024))
         print(command)
         if (bool(command & cwiid.BTN_A)):
-            ArmMotor.run(-50)
+            ArmMotor.move(-50)
         elif (bool(command & cwiid.BTN_B)):
-            ArmMotor.run(20)
+            ArmMotor.move(20)
         elif (command == 0):
-            ArmMotor.run(0)
+            ArmMotor.move(0)
             ArmMotor.braking(True)
 finally:
     ArmMotor.reset()
