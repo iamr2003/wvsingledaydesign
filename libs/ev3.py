@@ -161,8 +161,7 @@ class motor:
 				self.motorDisconnectedMessage = True
 			self.connect(self.address)
 
-	# self.dutySpeed.write(str(int(min(max(newDutySpeed, -100), 100))))
-	def run(self, speed):
+	def move(self, speed):
 		try:
 			with open(os.path.join(self.device.sys_path, 'duty_cycle_sp'), 'w') as file:
 				file.write(str(int(min(max(speed, -100), 100))))
@@ -220,40 +219,53 @@ class motor:
 			self.connect(self.address)
 
 class buttons:
-	def __init__(self):
-		self.BUF_LEN = (0x2ff + 7) / 8
-		self.buf = array.array('B', [0] * self.BUF_LEN)
-
-		with open('/dev/input/by-path/platform-gpio_keys-event', 'r') as fd:
-			self.ret = fcntl.ioctl(fd, self.EVIOCGKEY(len(self.buf)), self.buf)
-	
-	def EVIOCGKEY(self, length):
+	def _EVIOCGKEY(self, length):
 		return 2 << (14+8+8) | length << (8+8) | ord('E') << 8 | 0x18
 
-	def test_bit(self, bit, bytes):
+	def _testBit(self, bit, bytes):
 		return bool(bytes[bit / 8] & (1 << (bit % 8)))
 
-	def getCode(self, button):
-		if (button == 'center'):
-			return 28
-		elif (button == 'left'):
-			return 105
-		elif(button == 'right'):
-			return 106
-		elif(button == 'up'):
-			return 103
-		elif(button == 'down'):
-			return 108
-		elif(button == 'back'):
-			return 14
+	def getButton(self, button):
+		self._buf_LEN = (0x2ff + 7) / 8
+		self._buf = array.array('B', [0] * self._buf_LEN)
 
-	def getButton(self, buttonCode):
-		if self.ret < 0:
+		with open('/dev/input/by-path/platform-gpio_keys-event', 'r') as fd:
+			self._ret= fcntl.ioctl(fd, self._EVIOCGKEY(len(self._buf)), self._buf)
+		if self._ret< 0:
 			print "ioctl error", self.ret
 			sys.exit(1)
 
-		key_state = self.test_bit(buttonCode, self.buf)
-		print key_state
+		if (button == 'center'):
+			self._key_code = 28
+			self._key_state = self._testBit(self._key_code, self._buf)
+			return self._key_state
+		elif (button == 'left'):
+			self._key_code = 105
+			self._key_state = self._testBit(self._key_code, self._buf)
+			return self._key_state
+		elif(button == 'right'):
+			self._key_code = 106
+			self._key_state = self._testBit(self._key_code, self._buf)
+			return self._key_state
+		elif(button == 'up'):
+			self._key_code = 103
+			self._key_state = self._testBit(self._key_code, self._buf)
+			return self._key_state
+		elif(button == 'down'):
+			self._key_code = 108
+			self._key_state = self._testBit(self._key_code, self._buf)
+			return self._key_state
+		elif(button == 'back'):
+			self._key_code = 14
+			self._key_state = self._testBit(self._key_code, self._buf)
+			return self._key_state
+
+
+		# for key in [103, 108, 105, 106, 28, 14]:
+		# 	self._key_code = globals()[' + str(key)]
+		# 	self._key_state = self._testBit(self._key_code, self._buf)
+		# 	return self._key_state
+			# print '%9s : %s' % (key, _key_state)
 
 class led:
 	def __init__(self, led):
