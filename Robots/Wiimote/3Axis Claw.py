@@ -41,16 +41,16 @@ def hatThread():
 try:
     # thread.start_new_thread(hatThread, ())
     while True:
-        turnTable.run(mote.getClassicJoistics()["rightX"] * 100)
-        lift.run(mote.getClassicJoistics()["leftY"] * 500)
+        turnTable.move(mote.getClassicJoistics()["rightX"] * 100)
+        lift.move(mote.getClassicJoistics()["leftY"] * 500)
         
         #Claw
         if (mote.getClassicButton("L")):
-            claw.run(30)
+            claw.move(30)
         elif (mote.getClassicButton("R")):
-            claw.run(-30)
+            claw.move(-30)
         else:
-            claw.run(0)
+            claw.move(0)
 finally:
     turnTable.reset()
     claw.reset()

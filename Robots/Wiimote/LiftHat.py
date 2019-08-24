@@ -14,7 +14,7 @@ liftHomePos = lift.getPos()
 liftAuto = False
 
 try:
-    s.connect(('192.168.43.153', 8000))
+    s.connect(('192.168.43.236', 8000))
 except:
     print("Incorect Base IP")
 
@@ -25,7 +25,7 @@ try:
         # Lift
         if (bool(command & cwiid.BTN_A)):
             liftAuto = False
-            lift.run(-50)
+            lift.move(-50)
         elif (bool(command & cwiid.BTN_B)):
             liftAuto = True
             lift.moveAbs(liftHomePos, 100)
