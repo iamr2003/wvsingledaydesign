@@ -77,8 +77,8 @@ def armController(x,y,shoulder,elbow,shoulderLimit,elbowLimit):
         elbow.moveAbs(5*(180+q2),100)
         shoulder.moveAbs(int(8.33*(90-q1))-16,100)
     else:
-        elbow.run(-50)
-        shoulder.run(-50)
+        elbow.move(-50)
+        shoulder.move(-50)
         if elbowLimit.getValue()==1 and shoulderLimit.getValue()==1:
             elbow.reset()
             shoulder.reset()
@@ -118,9 +118,9 @@ if __name__ == '__main__':
             rt = 1+JOYSTICK_STATE[ecodes.ABS_RZ]
             lt = 1+JOYSTICK_STATE[ecodes.ABS_Z]
             if rt !=0 and lt !=0: 
-                turret.run(0)
+                turret.move(0)
             else:
-                turret.run(int((rt-lt))*MAX_SPEED)#lazy logic to avoid comparators
+                turret.move(int((rt-lt))*MAX_SPEED)#lazy logic to avoid comparators
             armController(x,y,shoulder,elbow,shoulderLimit,elbowLimit)
             print ('x =' + str(x) + ' y ='+ str(y))
             x+=ls_x*.05
