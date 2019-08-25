@@ -42,7 +42,7 @@ def hatThread():
 
 
 try:
-    thread.start_new_thread(hatThread, ())
+    # thread.start_new_thread(hatThread, ())
     while True:
         # Reversing
         if (mote.getClassicButton("A") and isReversed == False and wasPushed == False):
@@ -56,7 +56,7 @@ try:
 
         # Base
         speed = mote.getClassicJoistics()["leftY"] * 100
-        rightJoistic = (mote.getClassicJoistics()["rightX"] * mote.getClassicJoistics()["rightX"] * mote.getClassicJoistics()["rightX"])
+        rightJoistic = 1.4 * (mote.getClassicJoistics()["rightX"] * mote.getClassicJoistics()["rightX"] * mote.getClassicJoistics()["rightX"])
         if (isReversed == False):
             leftMotor.move(speed + rightJoistic * 100)
             rightMotor.move(speed - rightJoistic * 100)
@@ -75,7 +75,7 @@ try:
         # Lift
         if (mote.getClassicButton("ZL")):
             liftAuto = False
-            lift.move(-50)
+            lift.move(50)
         elif (mote.getClassicButton("ZR")):
             liftAuto = True
             lift.moveAbs(liftHomePos, 525)
